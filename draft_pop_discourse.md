@@ -36,20 +36,26 @@ Conceptually, you'll duplicate the original dataset for each included prior peri
 While the conceptual approach is exceptionally simple, there are a couple things to watch out for:
 
 * Database syntax differences. If not using redshift, you will likely need to swap in your dialect’s version of the timestamp_add function (i.e. tweak the sql logic we use to refine your base date for PoP).
-* <details><summary>Expand for additional complexities you can also read about in the code comments</summary>
 
-  * As you can see in the example above, this process will show ‘Prior data for future periods’ which have not yet come to pass. Technically this is an accurate representation of the data but may be distracting to users. The code provides a somewhat complex mechanism to suppress those rows automatically.
+<details>
+<summary>Expand for additional complexities you can also read about in the code comments</summary>
+<br>
+  - As you can see in the example above, this process will show ‘Prior data for future periods’ which have not yet come to pass. Technically this is an accurate representation of the data but may be distracting to users. The code provides a somewhat complex mechanism to suppress those rows automatically.
+<br>
+<br>
+  - Timezone conversion needs to happen BEFORE date manipulation in order to maintain correct groupings, so we’ll need to apply timezone conversion with liquid instead of letting looker do convert_tz:yes.
+<br>
+<br>
+  - PoP functionality can be added on additional date fields, though it requires some care to avoid name collisions on pop pivot dimensions you create.
 
-  * Timezone conversion needs to happen BEFORE date manipulation in order to maintain correct groupings, so we’ll need to apply timezone conversion with liquid instead of letting looker do convert_tz:yes.
-
-  * PoP functionality can be added on additional date fields, though it requires some care to avoid name collisions on pop pivot dimensions you create.
 </details>
 
 # Implementation At Last
+
 ### First, you will paste some Period over Period Support LookML in a new file.  This is generic code which you will be able to use with any number of pop enabled fields.
 <details><summary>See Period over Period Support LookML</summary>
-```
 
+<pre><code>
 #You should not need to modify the code below.  Save this code in a file and include that file wherever needed (i.e. where your explores are defined)
 view: pop_support {
   view_label: "PoP Support - Overrides and Tools"
@@ -86,7 +92,7 @@ where {%condition periods_ago_to_include%}periods_ago{%endcondition%}
     default_value: "Default"
   }
 }
-```
+</code></pre>
 </details>
 
 ### Then, we your refine your view that has the base date field, by pasting the template below and then updating the relevant references (to match your view name and date field name).
@@ -94,8 +100,8 @@ where {%condition periods_ago_to_include%}periods_ago{%endcondition%}
 Paste this template into a new file, and follow the instructions in the code comments.
 <details><summary>See Refinement Template</summary>
 
-Note that, in this code block, **the lines where you need to update references to match to your existing objects are left aligned**.
-```
+Note that, in this code block, <strong>the lines where you need to update references to match to your existing objects are left aligned</strong>.
+<pre><code>
 include: "*method9_pop_support__template*" #includes some fields that are core to the PoP implementation and referenced below. Ensure you update to match the location where you put the pop_support view code
 view: +order_items {#!Update to point to your view name.  That view's file must be included here, and then THIS file must be included in the explore
   # The following field sets up Default Period Lengths to compare use for each of your timeframes
@@ -166,15 +172,15 @@ sql:min({{created_date_original_sql._sql}})|| ' to '||max({{created_date_origina
   }
 }
 
-```
+</code></pre>
 </details>
 
 ### Finally, you will include the refinement into the file where your explore is defined, and enable the PoP feature.
 Here's an example of applying the order_items refinement we created in the template, but your refinement could be similarly added to any existing explore that includes the view you refined.
 <details><summary>See Explore Declaration Step LookML</summary>
 
-Note that, in this code block, **the lines where you need to update references to match to your existing objects are left aligned**.
-```
+Note that, in this code block, <strong>the lines where you need to update references to match to your existing objects are left aligned</strong>.
+<pre><code>
 include: "/method9/method9" #in your case you'll need to include your file that applies the PoP refinements
 explore: pop_cross {
   label: "PoP Method 9: Align Prior Periods to an existing date field, with Refinement and Cross Join"
@@ -196,7 +202,7 @@ explore: pop_cross {
     ;;
   }
 }
-```
+</code></pre>
 </details>
 
 # Closing
