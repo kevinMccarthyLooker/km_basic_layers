@@ -1,6 +1,6 @@
 # Using Refinements to add Period over Period functionality to existing explores
 
-In this article, we’ll show how you can use **refinements** to implement a commonly requested feature: Period over Period analysis.
+In this article, we’ll show how you can use **refinements** to implement a commonly requested explore feature: **Period over Period** analysis.
 
 | Background on Refinements in general | Period over Period in general |
 |-|-|
